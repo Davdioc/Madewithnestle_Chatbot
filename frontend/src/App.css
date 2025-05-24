@@ -1,0 +1,7 @@
+.app{
+  background-image: url("/src/assets/Screenshot 2025-05-21 175612.jpg");
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  width: 100%;
+}
