@@ -106,6 +106,8 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  background-color: #2C6145;
+  color: white;
   z-index: 1001;
 }
 
