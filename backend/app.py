@@ -25,9 +25,15 @@ load_dotenv()
 app = FastAPI(title="Made with Nestlé Chatbot API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  
+    allow_origins=[
+        "https://yellow-beach-082df8c0f.6.azurestaticapps.net",
+        "http://localhost:3000", 
+        "http://localhost:5173",
+        "http://127.0.0.1:3000", 
+        "http://127.0.0.1:5173"   
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -229,7 +235,7 @@ graph, vector_retriever, entity_chain, chain, llm_transformer = init_components(
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "Made with Nestlé Chatbot API is running"}
+    return {"status": "ok", "message": "Made with Nestlé Chatbot API is running."}
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
