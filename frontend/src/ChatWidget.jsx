@@ -53,7 +53,7 @@ function ChatWidget({ label = 'Quicky' }) {
     setInput('');
 
     try {
-        const response = await axios.post('http://localhost:8000/api/chat', {
+        const response = await axios.post('https://backendn-e4gph4gxe4dwa9dk.canadaeast-01.azurewebsites.net/api/chat', {
         question: input
         });
 

@@ -10,7 +10,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser, StrOutputParser
 from langchain_community.graphs import Neo4jGraph
-from langchain.chat_models import AzureChatOpenAI
+from langchain_community.chat_models import AzureChatOpenAI
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_community.vectorstores import Neo4jVector
 from langchain_experimental.graph_transformers import LLMGraphTransformer
@@ -46,8 +46,12 @@ class Entities(BaseModel):
 
 def init_components():
     #Initialize Neo4j Graph DB connection
-    graph = Neo4jGraph()
-    
+    graph = Neo4jGraph(
+        url=os.getenv("NEO4J_URI"),
+        username=os.getenv("NEO4J_USERNAME"),
+        password=os.getenv("NEO4J_PASSWORD"),
+    )
+    print("Connected to Neo4j graph database")
     #Initialize Azure OpenAI components
     llm = AzureChatOpenAI(
         deployment_name=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
