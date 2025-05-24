@@ -31,6 +31,9 @@ function ChatWidget({ label = 'Quicky' }) {
 
   const [showDropdown, setShowDropdown] = useState(false);
 
+  //Typing animation
+  const [isTyping, setIsTyping] = useState(false);
+
   const toggleChat = () => setIsOpen(!isOpen);
 
   const toggleDropdown = () => {
@@ -46,31 +49,34 @@ function ChatWidget({ label = 'Quicky' }) {
   };
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+  if (!input.trim()) return;
 
-    const userMessage = { sender: 'user', text: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+  const userMessage = { sender: 'user', text: input };
+  setMessages(prev => [...prev, userMessage]);
+  setInput('');
+  setIsTyping(true); // start typing animation
 
-    try {
-        const response = await axios.post('https://backendn-e4gph4gxe4dwa9dk.canadaeast-01.azurewebsites.net/api/chat', {
-        question: input
-        });
+  try {
+    const response = await axios.post('https://backendn-e4gph4gxe4dwa9dk.canadaeast-01.azurewebsites.net/api/chat', {
+      question: input
+    });
 
-        const botReply = {
-        sender: 'bot',
-        text: response.data.answer 
-        };
+    const botReply = {
+      sender: 'bot',
+      text: response.data.answer
+    };
 
-        setMessages(prev => [...prev, botReply]);
+    setMessages(prev => [...prev, botReply]);
 
-    } catch (error) {
-        console.error('Error fetching bot response:', error);
-        setMessages(prev => [
-        ...prev,
-        { sender: 'bot', text: 'Something went wrong. Please try again.' }
-        ]);
-    }
+  } catch (error) {
+    console.error('Error fetching bot response:', error);
+    setMessages(prev => [
+      ...prev,
+      { sender: 'bot', text: 'Something went wrong. Please try again.' }
+    ]);
+  } finally {
+    setIsTyping(false); // stop typing animation
+  }
 };
   return (
     <>
@@ -131,6 +137,19 @@ function ChatWidget({ label = 'Quicky' }) {
 
                 </div>
             ))}
+            {isTyping && (
+              <div className="chat-msg bot">
+                <div className="msg-wrapper bot">
+                  <img src={botIcon} alt="bot" className="msg-avatar left" />
+                  <div className="msg-bubble bot-bubble typing">
+                    <span className="dot"></span>
+                    <span className="dot"></span>
+                    <span className="dot"></span>
+                  </div>
+                </div>
+              </div>
+          )}
+
           </div>
 
           <div className="chat-input">
