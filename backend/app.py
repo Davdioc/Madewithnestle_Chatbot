@@ -39,6 +39,7 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     question: str
+    name: str
 
 class ChatResponse(BaseModel):
     answer: str
@@ -240,7 +241,8 @@ def read_root():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        response = chain.invoke(input= request.question)
+        full_question = f'Your name is {request.name} answer this question: {request.question}'
+        response = chain.invoke(input= full_question)
         print("LLM response:", response)
         
         documents = [request.question] if request.question.strip() else []
