@@ -4,7 +4,7 @@ This is my final submission for the **Technical Test: AI-Based Chatbot Developme
 
 ---
 
-## 🚀 Running the Chatbot Locally
+## Running the Chatbot Locally
 
 To run the chatbot locally:
 
@@ -43,7 +43,7 @@ docker compose up --build
 
 ---
 
-## ⚠️ Notes
+## Notes
 
 - The local version uses a local Neo4j database.
 - The deployed version uses **Neo4j Aura**, and its backend has been optimized using asynchronous programming and multi-threading for better performance.
@@ -51,7 +51,7 @@ docker compose up --build
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 - **Azure OpenAI (GPT-4o)** – Transforms processed documents into graph documents.
 - **Azure OpenAI Embeddings (text-embedding-3-large)** – Converts the graph database into a Neo4j vector store.
@@ -67,7 +67,7 @@ docker compose up --build
 
 ---
 
-## 📌 Known Limitations
+## Known Limitations
 
 1. **No dynamic scraping:** Due to resource constraints, the system doesn’t scrape `madewithnestle.ca` in real time.
 2. **Partial knowledge base:** The site contains ~1820 pages (from `sitemap.xml`), but only 82 key pages were processed due to limited resources.
@@ -75,7 +75,7 @@ docker compose up --build
 
 ---
 
-## 🙏 Final Note
+## Final Note
 
 Thank you for the opportunity to interview with such a prestigious company. This project was both a challenge and a pleasure to build.
 
