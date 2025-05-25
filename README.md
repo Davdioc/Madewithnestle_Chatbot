@@ -73,7 +73,7 @@ docker compose up --build
 2. **Partial knowledge base:** The site contains ~1820 pages (from `/sitemap.xml`), only pages from `/sitmap` (82) were processed due to limited resources.
 3. **Frontend responsiveness:** The layout may not respond well on screen sizes narrower than **1041px**.
 
-- Additional features can be found in the /documentation directory
+- **Additional features can be found in the /documentation directory**
 ---
 
 ## Final Note
