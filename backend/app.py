@@ -5,6 +5,9 @@ from typing import List, Optional
 import os
 import re
 from dotenv import load_dotenv
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+import threading
 
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate
@@ -18,10 +21,13 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.schema.document import Document
 from neo4j import GraphDatabase
 
-#load environment variables from .env file
+# Load environment variables from .env file
 load_dotenv()
 
-#Initialize app
+# Thread pool for CPU-intensive operations
+executor = ThreadPoolExecutor(max_workers=4)
+
+# Initialize app
 app = FastAPI(title="Made with Nestlé Chatbot API")
 app.add_middleware(
     CORSMiddleware,
@@ -51,15 +57,23 @@ class Entities(BaseModel):
         description="What is being searched for.",
     )
 
+#cache for compiled regex patterns
+_lucene_chars_pattern = re.compile(r'[+\-&|!(){}[\]^"~*?:\\/]')
+_whitespace_pattern = re.compile(r'\s+')
+
+#cache for text splitter
+_text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+
 def init_components():
-    #Initialize Neo4j Graph DB connection
+    """Initialize Neo4j Graph DB connection"""
     graph = Neo4jGraph(
         url=os.getenv("NEO4J_URI"),
         username=os.getenv("NEO4J_USERNAME"),
         password=os.getenv("NEO4J_PASSWORD"),
     )
     print("Connected to Neo4j graph database")
-    #Initialize Azure OpenAI components
+    
+    # Initialize Azure OpenAI components
     llm = AzureChatOpenAI(
         deployment_name=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
         openai_api_key=os.getenv("AZURE_OPENAI_API_KEY"),
@@ -92,7 +106,7 @@ def init_components():
 
     parser = PydanticOutputParser(pydantic_object=Entities)
     
-    #Create an entity extraction prompt
+    # Create an entity extraction prompt
     entity_prompt = ChatPromptTemplate.from_messages([
         (
             "system",
@@ -106,7 +120,7 @@ def init_components():
         ),
     ])
     
-    #create entity chain
+    # Create entity chain
     entity_chain = entity_prompt.partial(format_instructions=parser.get_format_instructions()) | llm | parser
 
     template = """Answer the question based only on the following context and add a url of the source of the information if any towards the end of the statement. Never make up a url: {context}
@@ -128,8 +142,8 @@ def init_components():
     return graph, vector_retriever, entity_chain, chain, llm_transformer
 
 def get_text_chunks_langchain(text):
-    text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=100)
-    docs = [Document(page_content=x) for x in text_splitter.split_text(text)]
+    """Optimized text chunking using cached splitter"""
+    docs = [Document(page_content=x) for x in _text_splitter.split_text(text)]
     return docs
 
 def add_to_graph(documents, graph, llm_transformer):
@@ -151,46 +165,27 @@ def add_to_graph(documents, graph, llm_transformer):
         )
 
 def remove_lucene_chars(text):
-    """
-    Properly escape or remove special Lucene characters from the input string
-    to prevent query parsing errors.
-    """
-    special_chars = r'+-&|!(){}[]^"~*?:\/'
+    #using compiled regex pattern for faster substitution
+    cleaned_text = _lucene_chars_pattern.sub(' ', text)
     
-    #Replace or escape each special character
-    cleaned_text = ""
-    for char in text:
-        if char in special_chars:
-            cleaned_text += " "  # Replace with space
-        else:
-            cleaned_text += char
-    
-    # Remove extra spaces and trim
-    cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+    # Remove extra spaces and trim using compiled pattern
+    cleaned_text = _whitespace_pattern.sub(' ', cleaned_text).strip()
     return cleaned_text
 
-def generate_full_text_query(input_text: str) -> str:
-    words = [el for el in remove_lucene_chars(input_text).split() if el]
-    if not words:
-        return ""
-    full_text_query = " AND ".join([f"{word}~2" for word in words])
-    print(f"Generated Query: {full_text_query}")
-    return full_text_query.strip()
-
 def graph_retriever(question: str, graph: Neo4jGraph, entity_chain) -> str:
-    #Collects the neighborhood of entities mentioned in the question
     result = ""
     try:
         entities = entity_chain.invoke(question)
         
-        for entity in entities.link:
-            #Prepare the entity before using in query
-            sanitized_entity = remove_lucene_chars(entity)
-            
-            #skip empty queries
-            if not sanitized_entity:
-                continue
-            
+        # Pre-process all entities to avoid repeated sanitization
+        sanitized_entities = [remove_lucene_chars(entity) for entity in entities.link if remove_lucene_chars(entity)]
+        
+        if not sanitized_entities:
+            return result
+        
+        # Use list comprehension for better performance
+        outputs = []
+        for entity in sanitized_entities:
             try:
                 response = graph.query(
                     """CALL db.index.fulltext.queryNodes('fulltext_entity_id', $query, {limit:7})
@@ -206,32 +201,50 @@ def graph_retriever(question: str, graph: Neo4jGraph, entity_chain) -> str:
                     }
                     RETURN output LIMIT 50
                     """,
-                    {"query": sanitized_entity},
+                    {"query": entity},
                 )
-                result += "\n".join([el['output'] for el in response])
+                outputs.extend([el['output'] for el in response])
             except Exception as e:
                 print(f"Error querying graph for entity '{entity}': {str(e)}")
-                #Carry on with next entity rather than failing completely
                 continue
+        
+        result = "\n".join(outputs)
     
     except Exception as e:
         print(f"Error in entity extraction: {str(e)}")
-        #return empty result rather than crashing
         pass
     
     return result
 
-#function to combine graph data and vector data
 def full_retriever(question: str, graph: Neo4jGraph, vector_retriever, entity_chain):
-    graph_data = graph_retriever(question, graph, entity_chain)
-    vector_data = [el.page_content for el in vector_retriever.invoke(question)]
-    final_data = f"""Graph data:
-    {graph_data}\n\nVector data:
-    {"". join(vector_data)}
-    """
-    return final_data
+    def get_graph_data():
+        return graph_retriever(question, graph, entity_chain)
+    
+    def get_vector_data():
+        return [el.page_content for el in vector_retriever.invoke(question)]
+    
+    #Executing both retrievals concurrently for better performance
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    try:
+        # Run both operations concurrently
+        graph_future = executor.submit(get_graph_data)
+        vector_future = executor.submit(get_vector_data)
+        
+        graph_data = graph_future.result()
+        vector_data = vector_future.result()
+        
+        # Use join for better string concatenation performance
+        final_data = f"""Graph data:
+        {graph_data}\n\nVector data:
+        {"".join(vector_data)}
+        """
+        return final_data
+    finally:
+        loop.close()
 
-#Initialize components
+# Initialize components
 graph, vector_retriever, entity_chain, chain, llm_transformer = init_components()
 
 @app.get("/")
@@ -241,16 +254,32 @@ def read_root():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        full_question = f'Your name is {request.name} answer this question: {request.question}'
-        response = chain.invoke(input= full_question)
+        full_question = f'Your name has been set to {request.name}, do not greet just politely answer this question: {request.question}'
+        
+        #run the main chain processing and graph addition concurrently
+        async def process_chain():
+            return await asyncio.get_event_loop().run_in_executor(
+                executor, chain.invoke, full_question
+            )
+        
+        async def process_graph_addition():
+            if request.question.strip():
+                documents = get_text_chunks_langchain(request.question)
+                await asyncio.get_event_loop().run_in_executor(
+                    executor, add_to_graph, documents, graph, llm_transformer
+                )
+        
+        #Execute both operations concurrently
+        response_task = process_chain()
+        graph_task = process_graph_addition()
+        
+        # Waiting for the main response
+        response = await response_task
+        
+        #start graph addition in background 
+        asyncio.create_task(graph_task)
+        
         print("LLM response:", response)
-        
-        documents = [request.question] if request.question.strip() else []
-        
-        # Add to graph only if documents is not empty
-        if documents:
-            documents = get_text_chunks_langchain(request.question)
-            add_to_graph(documents, graph, llm_transformer)
         
         if not response:
             raise HTTPException(status_code=404, detail="No answer found")
