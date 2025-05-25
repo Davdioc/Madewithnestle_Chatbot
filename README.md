@@ -78,6 +78,6 @@ docker compose up --build
 
 ## Final Note
 
-Thank you for the opportunity to interview with such a prestigious company. This project was both a pleasure to build.
+Thank you for the opportunity to interview with such a prestigious company. It was a pleasure to work on this project.
 
 — *David Oche*
