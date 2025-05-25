@@ -46,7 +46,7 @@ docker compose up --build
 ## Notes
 
 - The local version uses a local Neo4j database.
-- The deployed version uses **Neo4j Aura**, and its backend has been optimized using asynchronous programming and multi-threading for better performance.
+- The deployed version uses **Neo4j Aura**, and its backend has been optimized using asynchronous programming and concurrent request handling for better performance.
 - Both versions share the same underlying logic and implementation.
 
 ---
@@ -55,7 +55,7 @@ docker compose up --build
 
 - **Azure OpenAI (GPT-4o)** – Transforms processed documents into graph documents.
 - **Azure OpenAI Embeddings (text-embedding-3-large)** – Converts the graph database into a Neo4j vector store.
-- **ScraperAPI** – Bypasses `madewithnestle.ca`'s anti-bot protections for web crawling.
+- **ScraperAPI** – Bypasses `madewithnestle.ca`'s anti-bot protections for web crawling and scraping.
 - **Neo4j Aura** – Hosts the graph and vector database in production.
 - **FastAPI** – Powers the backend server.
 - **React + Vite** – Builds the frontend interface.
@@ -67,16 +67,17 @@ docker compose up --build
 
 ---
 
-## Known Limitations
+## Known Limitations and Additional Features
 
 1. **No dynamic scraping:** Due to resource constraints, the system doesn’t scrape `madewithnestle.ca` in real time.
-2. **Partial knowledge base:** The site contains ~1820 pages (from `sitemap.xml`), but only 82 key pages were processed due to limited resources.
+2. **Partial knowledge base:** The site contains ~1820 pages (from `/sitemap.xml`), only pages from `/sitmap` (82) were processed due to limited resources.
 3. **Frontend responsiveness:** The layout may not respond well on screen sizes narrower than **1041px**.
 
+- Additional features can be found in the /documentation directory
 ---
 
 ## Final Note
 
-Thank you for the opportunity to interview with such a prestigious company. This project was both a challenge and a pleasure to build.
+Thank you for the opportunity to interview with such a prestigious company. This project was both a pleasure to build.
 
 — *David Oche*
