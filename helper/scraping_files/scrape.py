@@ -7,7 +7,7 @@ import time
 with open("all_madewithnestle_urls.txt", "r", encoding="utf-8") as f:
     urls = [line.strip() for line in f if line.strip()]
 
-api_key = 'ce50e5669ed7408efbe51ba92ab0fd4f'
+api_key = ''
 
 #Text file to save the results for graph database processing
 with open("madewithnestle_content.txt", "w", encoding="utf-8") as txt:
