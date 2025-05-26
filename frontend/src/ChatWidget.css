@@ -3,7 +3,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  background: #00294f;
+  background: #4E2A1E;
   color: white;
   position: relative;
 }
@@ -88,7 +88,7 @@
 }
 
 .icon-option.selected {
-  border: 2px solid #00294f;
+  border: 2px solid #4E2A1E;
 }
 .chat-launcher {
   position: fixed;
@@ -179,7 +179,7 @@
   margin-top: 12px;
   width: 100%;
   padding: 8px;
-  background-color: #00294f;
+  background-color: #4E2A1E;;
   color: white;
   border: none;
   border-radius: 6px;
@@ -213,7 +213,7 @@
 
 /* BOT STYLE */
 .bot-bubble {
-  background-color: #003087; /* Nestlé blue */
+  background-color: #4E2A1E; /* Nestlé blue */
   color: white;
   border-top-left-radius: 0;
 }
@@ -221,7 +221,7 @@
 /* USER STYLE */
 .user-bubble {
   background-color: #DEDFE0;
-  color: #003087;
+  color: #4E2A1E;
   border-top-right-radius: 0;
 }
 
