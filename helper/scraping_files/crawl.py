@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 import time
 
 # Configuration
-api_key = 'ce50e5669ed7408efbe51ba92ab0fd4f'
+api_key = ''
 sitemap_url = 'https://www.madewithnestle.ca/sitemap.xml' 
 all_urls = set()
 
