@@ -147,6 +147,7 @@
   padding: 15px;
   overflow-y: auto;
   background: #f4f4f4;
+  scroll-behavior: smooth;
 }
 
 
@@ -335,4 +336,46 @@
 .chat-input,
 .msg-bubble {
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Making the chat more responsive for mobile */
+@media (max-width: 500px) {
+  .chat-modal {
+    width: 100%;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    transform: none;
+    border-radius: 0;
+    z-index: 1002;
+  }
+
+  .chat-header {
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .chat-input input {
+    font-size: 16px;
+  }
+
+  .msg-bubble {
+    max-width: 90%;
+    font-size: 15px;
+  }
+
+  .chat-dropdown {
+    width: 90%;
+    right: 5%;
+  }
+
+  .chat-launcher img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .send-icon {
+    width: 20px;
+    height: 20px;
+  }
 }
