@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './ChatWidget.css';
 import icon1 from './assets/icon1.png';
 import icon2 from './assets/icon2.png';
@@ -33,6 +33,14 @@ function ChatWidget({ label = 'Quicky' }) {
 
   //Typing animation
   const [isTyping, setIsTyping] = useState(false);
+
+    //scroll to bottom
+  const chatBodyRef = useRef(null);
+  useEffect(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]); 
 
   const toggleChat = () => setIsOpen(!isOpen);
 
@@ -121,7 +129,7 @@ function ChatWidget({ label = 'Quicky' }) {
             )}
           </div>
 
-          <div className="chat-body">
+          <div className="chat-body" ref={chatBodyRef}>
             {messages.map((msg, idx) => (
               <div key={idx} className={`chat-msg ${msg.sender}`}>
                     {msg.sender === 'bot' ? (
