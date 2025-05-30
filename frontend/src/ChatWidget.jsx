@@ -5,6 +5,8 @@ import icon2 from './assets/icon2.png';
 import icon3 from './assets/icon3.png';
 import icon4 from './assets/icon4.png';
 import icon5 from './assets/icon5.png';
+import dropdownIcon from './assets/dropdown.png';
+import closeIcon from './assets/close.png';
 import userIcon from './assets/usericon.png';
 import sendMessageIcon from './assets/send.png';
 import axios from 'axios';
@@ -119,8 +121,12 @@ function ChatWidget({ label = 'Quicky' }) {
               <span>{botName}</span>
             </div>
             <div className="chat-header-right">
-              <button className="dropdown-toggle" onClick={toggleDropdown}>▾</button>
-              <button className="close-btn" onClick={toggleChat}>✖</button>
+              <button className="dropdown-toggle" onClick={toggleDropdown}>
+                <img src={dropdownIcon} alt="Dropdown" style={{ width: '20px', height: '20px' }} />
+              </button>
+              <button className="close-btn" onClick={toggleChat}>
+                <img src={closeIcon} alt="Close" style={{ width: '18px', height: '18px' }} />
+              </button>
             </div>
 
             {showDropdown && (
