@@ -210,27 +210,14 @@
 
 .msg-bubble {
   max-width: 80%;
-  padding: 12px 16px;
-  font-size: 14px;
+  padding: 14px 18px;
+  font-size: 15px;
   border-radius: 18px;
-  line-height: 1.5;
+  line-height: 1.6; /* Adjusted for cleaner line spacing */
   position: relative;
   white-space: pre-wrap;
   word-break: break-word;
-}
-
-/* BOT STYLE */
-.bot-bubble {
-  background-color: #4E2A1E; /* Nestlé blue */
-  color: white;
-  border-top-left-radius: 0;
-}
-
-/* USER STYLE */
-.user-bubble {
-  background-color: #DEDFE0;
-  color: #4E2A1E;
-  border-top-right-radius: 0;
+  margin-bottom: 4px; /* Create space between text and time */
 }
 
 /* Avatars */
@@ -390,4 +377,40 @@
     height: 100%;
     overflow: auto;
   }
+}
+.bot-bubble-custom {
+  background-color: #FEF3C7; 
+  color: #4E2A1E;
+  border-radius: 16px;
+  border-top-left-radius: 0;
+  padding: 12px 16px;
+  max-width: 80%;
+  font-size: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.user-bubble-custom {
+  background-color: #4E2A1E; 
+  color:white;
+  border-radius: 16px;
+  border-top-right-radius: 0;
+  padding: 12px 16px;
+  max-width: 80%;
+  font-size: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.msg-timestamp-inside {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 8px;
+  text-align: right;
+}
+
+.user-bubble-custom .msg-timestamp-inside {
+  color: #FDE68A;
+}
+
+.bot-bubble-custom .msg-timestamp-inside {
+  color: #92400E;
 }

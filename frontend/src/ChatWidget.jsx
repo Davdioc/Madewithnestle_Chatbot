@@ -19,8 +19,13 @@ function ChatWidget({ label = 'Quicky' }) {
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { sender: 'bot', text: `Hi! I'm ${label}, your personal MadeWithNestlé AI assistant. Ask me anything, and I'll quickly search the entire site to find the answers you need` }
+    {
+      sender: 'bot',
+      text: `Hi! I'm ${label}, your personal MadeWithNestlé AI assistant. Ask me anything, and I'll quickly search the entire site to find the answers you need`,
+      timestamp: new Date().toISOString()
+    }
   ]);
+
   const [input, setInput] = useState('');
 
   //Saved values
@@ -61,7 +66,7 @@ function ChatWidget({ label = 'Quicky' }) {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMessage = { sender: 'user', text: input };
+     const userMessage = { sender: 'user', text: input,  timestamp: new Date().toISOString()};
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsTyping(true); // start typing animation
@@ -94,7 +99,8 @@ function ChatWidget({ label = 'Quicky' }) {
 
       const botReply = {
         sender: 'bot',
-        text: response.data.answer
+        text: response.data.answer,
+        timestamp: new Date().toISOString()
       };
 
       setMessages(prev => [...prev, botReply]);
@@ -103,8 +109,13 @@ function ChatWidget({ label = 'Quicky' }) {
       console.error('Error fetching bot response:', error);
       setMessages(prev => [
         ...prev,
-        { sender: 'bot', text: 'Something went wrong. Please try again.' }
+        {
+          sender: 'bot',
+          text: 'Something went wrong. Please try again.',
+          timestamp: new Date().toISOString()
+        }
       ]);
+
     } finally {
       setIsTyping(false); // stop typing animation
     }
@@ -158,19 +169,18 @@ function ChatWidget({ label = 'Quicky' }) {
           <div className="chat-body" ref={chatBodyRef}>
             {messages.map((msg, idx) => (
               <div key={idx} className={`chat-msg ${msg.sender}`}>
-                    {msg.sender === 'bot' ? (
-                        <div className="msg-wrapper bot">
-                            <img src={botIcon} alt="bot" className="msg-avatar left" />
-                            <div className="msg-bubble bot-bubble"><Markdown>{msg.text}</Markdown></div>
-                        </div>
-                        ) : (
-                        <div className="msg-wrapper user">
-                            <img src={userIcon} alt="user" className="msg-avatar right" />
-                            <div className="msg-bubble user-bubble"><Markdown>{msg.text}</Markdown></div>
-                        </div>
-                    )}
-
+                <div className={`msg-wrapper ${msg.sender}`}>
+                  <img src={msg.sender === 'bot' ? botIcon : userIcon} alt={msg.sender} className={`msg-avatar ${msg.sender === 'bot' ? 'left' : 'right'}`} />
+                  <div>
+                    <div className={`msg-bubble ${msg.sender === 'bot' ? 'bot-bubble-custom' : 'user-bubble-custom'}`}>
+                      <Markdown>{msg.text}</Markdown>
+                      <div className="msg-timestamp-inside">
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
             ))}
             {isTyping && (
               <div className="chat-msg bot">
