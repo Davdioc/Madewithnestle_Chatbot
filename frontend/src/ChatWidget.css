@@ -391,20 +391,3 @@
     overflow: auto;
   }
 }
-
-@keyframes openFromButton {
-  0% {
-    opacity: 0;
-    transform: scale(0.6) translate(-50%, -50%);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translate(-50%, -50%);
-  }
-}
-
-.chat-modal {
-  animation: openFromButton 0.4s ease-out forwards;
-  overflow: hidden;
-  transform-origin: bottom right;
-}
