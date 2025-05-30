@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 import os
 import re
+import requests
 from dotenv import load_dotenv
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -46,6 +47,8 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     question: str
     name: str
+    lat: Optional[float] = None
+    lng: Optional[float] = None
 
 class ChatResponse(BaseModel):
     answer: str
@@ -55,6 +58,18 @@ class Entities(BaseModel):
     link: List[str] = Field(
         ...,
         description="What is being searched for.",
+    )
+
+#This class is used to determine if the user is looking for a location
+class Locate(BaseModel):
+    """Identify if the user is looking for a location."""
+    question: bool = Field(
+        ...,
+        description="Whether the user is looking for a location.",
+    )
+    product: list[str] = Field(
+        ...,
+        description="List of products the user is looking for.",
     )
 
 #cache for compiled regex patterns
@@ -120,6 +135,22 @@ def init_components():
         ),
     ])
     
+    locate_parser = PydanticOutputParser(pydantic_object=Locate)
+    #Promt to decide if the user is looking for a location
+    locate_prompt = ChatPromptTemplate.from_messages([
+        (
+            "system",
+            "You are determining if the text is looking to find the location of a nestle product and extracting nestle products from the text.\n"
+            "{format_instructions}"
+        ),
+        (
+            "human",
+            "Use the given format to determine if the user is looking for a location: {question}",
+        ),
+    ])
+    #Create a chain to determine if the user is looking for a location
+    locate_chain = locate_prompt.partial(format_instructions=locate_parser.get_format_instructions()) | llm | locate_parser
+
     # Create entity chain
     entity_chain = entity_prompt.partial(format_instructions=parser.get_format_instructions()) | llm | parser
 
@@ -139,7 +170,7 @@ def init_components():
         | StrOutputParser()
     )
     
-    return graph, vector_retriever, entity_chain, chain, llm_transformer
+    return graph, vector_retriever, entity_chain, locate_chain, chain, llm_transformer
 
 def get_text_chunks_langchain(text):
     """Optimized text chunking using cached splitter"""
@@ -244,8 +275,74 @@ def full_retriever(question: str, graph: Neo4jGraph, vector_retriever, entity_ch
     finally:
         loop.close()
 
+def calculate_distance(lat1, lon1, lat2, lon2):
+    from math import radians, sin, cos, sqrt, atan2
+    #convert latitude and longitude from degrees to radians
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    d = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+    r = 6371 
+    distance = 2 * r * atan2(sqrt(d), sqrt(1 - d))
+    return distance
+
+#Get the location of items
+def get_location(items: list[str], lat, lng) -> str:
+    API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+    endpoint_url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
+    if len(items)==1:
+        output = " **Nearby Locations for Requested Item:**\n"
+    else:
+        output = " **Nearby Locations for Requested Items:**\n"
+    for item in items:
+        params = {
+            'keyword': item,
+            'location': f'{lat},{lng}',
+            'radius': 10500,
+            'key': API_KEY
+        }
+
+        response = requests.get(endpoint_url, params=params)
+
+        if response.status_code == 200:
+            data = response.json()
+            results = data.get('results', [])[:4] 
+
+            if results:
+                output += f"\n • **Top matches for _{item}_:**\n"
+                for idx, place in enumerate(results, start=1):
+                    name = place.get('name', 'N/A')
+                    address = place.get('vicinity', 'No address found')
+                    lat2 = place['geometry']['location']['lat']
+                    lng2 = place['geometry']['location']['lng']
+                    distance = calculate_distance(lat, lng, lat2, lng2)
+                    
+                    output += (
+                        f"  {idx}. **{name}**\n"
+                        f"      Address: {address}\n"
+                        f"      Distance: {distance:.2f} km\n"
+                    )
+            else:
+                output += f"\n No nearby places found for _{item}_.\n"
+        else:
+            output += f"\n Error {response.status_code} while searching for _{item}_: {response.text}\n"
+
+    return output.strip()
+
+def get_amazon_links(items: list[str]) -> str:
+    base_url = f"https://www.amazon.ca/s?k="
+    output = " **Amazon Search Links:**\n"
+
+    for item in items:
+        search_query = item.replace(" ", "+")
+        link = f"{base_url}{search_query}"
+        output += f"- [_{item}_]({link})\n"
+
+    return output.strip()
+
+
 # Initialize components
-graph, vector_retriever, entity_chain, chain, llm_transformer = init_components()
+graph, vector_retriever, entity_chain, locate_chain, chain, llm_transformer = init_components()
 
 @app.get("/")
 def read_root():
@@ -255,7 +352,15 @@ def read_root():
 async def chat(request: ChatRequest):
     try:
         full_question = f'Your name has been set to {request.name}, do not greet just politely answer this question: {request.question}'
-        
+        #If location is asked for then run locate chain
+        locate_response = locate_chain.invoke(request.question)
+        if locate_response.question and locate_response.product:
+            if request.lat is not None and request.lng is not None:
+                response = get_location(locate_response.product, request.lat, request.lng)
+            else:
+                response = "Please enable location services to find nearby locations."
+            response += "\n\n" + get_amazon_links(locate_response.product)
+            return ChatResponse(answer=response)
         #run the main chain processing and graph addition concurrently
         async def process_chain():
             return await asyncio.get_event_loop().run_in_executor(

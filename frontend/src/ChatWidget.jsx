@@ -57,36 +57,56 @@ function ChatWidget({ label = 'Quicky' }) {
   };
 
   const handleSend = async () => {
-  if (!input.trim()) return;
+    if (!input.trim()) return;
 
-  const userMessage = { sender: 'user', text: input };
-  setMessages(prev => [...prev, userMessage]);
-  setInput('');
-  setIsTyping(true); // start typing animation
+    const userMessage = { sender: 'user', text: input };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsTyping(true); // start typing animation
 
-  try {
-    const response = await axios.post('https://backendn-e4gph4gxe4dwa9dk.canadaeast-01.azurewebsites.net/api/chat', {
-      question: input,
-      name: botName
-    });
+    //retrieve user's location
+    let coords = {};
+    if (navigator.geolocation) {
+      try {
+        coords = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            (position) => resolve({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            }),
+            () => resolve({})  // fail silently
+          );
+        });
+      } catch (err) {
+        console.warn('Location access failed');
+      }
+    }
 
-    const botReply = {
-      sender: 'bot',
-      text: response.data.answer
-    };
+    try {
+      const response = await axios.post('https://backendn-e4gph4gxe4dwa9dk.canadaeast-01.azurewebsites.net/api/chat', {
+        question: input,
+        name: botName,
+        lat: coords.lat || null,
+        lng: coords.lng || null,
+      });
 
-    setMessages(prev => [...prev, botReply]);
+      const botReply = {
+        sender: 'bot',
+        text: response.data.answer
+      };
 
-  } catch (error) {
-    console.error('Error fetching bot response:', error);
-    setMessages(prev => [
-      ...prev,
-      { sender: 'bot', text: 'Something went wrong. Please try again.' }
-    ]);
-  } finally {
-    setIsTyping(false); // stop typing animation
-  }
-};
+      setMessages(prev => [...prev, botReply]);
+
+    } catch (error) {
+      console.error('Error fetching bot response:', error);
+      setMessages(prev => [
+        ...prev,
+        { sender: 'bot', text: 'Something went wrong. Please try again.' }
+      ]);
+    } finally {
+      setIsTyping(false); // stop typing animation
+    }
+  };
   return (
     <>
       {isOpen && <div className="chat-overlay" onClick={toggleChat}></div>}
