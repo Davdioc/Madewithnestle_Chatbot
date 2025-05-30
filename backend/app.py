@@ -309,21 +309,31 @@ def get_location(items: list[str], lat, lng) -> str:
             results = data.get('results', [])[:4] 
 
             if results:
-                output += f"\n • **Top matches for _{item}_:**\n"
+                output += f"\n • **Top matches for _{item.upper()}_:**\n"
                 for idx, place in enumerate(results, start=1):
                     name = place.get('name', 'N/A')
                     address = place.get('vicinity', 'No address found')
                     lat2 = place['geometry']['location']['lat']
                     lng2 = place['geometry']['location']['lng']
                     distance = calculate_distance(lat, lng, lat2, lng2)
+
+                    open_now = place.get("opening_hours", {}).get("open_now", None)
+                    if open_now is True:
+                        status = 'Open'
+                    elif open_now is False:
+                        status = 'Closed'
+                    else:
+                        status = 'Availability Unknown'
                     
                     output += (
                         f"  {idx}. **{name}**\n"
                         f"      Address: {address}\n"
                         f"      Distance: {distance:.2f} km\n"
+                        f"      Status: {status}\n"
+                        f"      [View on Google Maps](https://www.google.com/maps/search/?api=1&query={lat2},{lng2})\n"
                     )
             else:
-                output += f"\n No nearby places found for _{item}_.\n"
+                output += f"\n No nearby places found for _{item.upper()}_.\n"
         else:
             output += f"\n Error {response.status_code} while searching for _{item}_: {response.text}\n"
 
@@ -336,7 +346,7 @@ def get_amazon_links(items: list[str]) -> str:
     for item in items:
         search_query = item.replace(" ", "+")
         link = f"{base_url}{search_query}"
-        output += f"- [_{item}_]({link})\n"
+        output += f"- [**{item.upper()}**]({link})\n"
 
     return output.strip()
 
