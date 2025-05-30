@@ -220,6 +220,13 @@
   margin-bottom: 4px; /* Create space between text and time */
 }
 
+/* BOT STYLE */
+.bot-bubble {
+  background-color: #4E2A1E; /* Nestlé blue */
+  color: white;
+  border-top-left-radius: 0;
+}
+
 /* Avatars */
 .msg-avatar {
   width: 24px;
@@ -379,7 +386,7 @@
   }
 }
 .bot-bubble-custom {
-  background-color: #FEF3C7; 
+  background-color: #FEF3C7; /* light yellow */
   color: #4E2A1E;
   border-radius: 16px;
   border-top-left-radius: 0;
@@ -407,10 +414,12 @@
   text-align: right;
 }
 
+/* Dark bubble (user) timestamp */
 .user-bubble-custom .msg-timestamp-inside {
   color: #FDE68A;
 }
 
+/* Light bubble (bot) timestamp */
 .bot-bubble-custom .msg-timestamp-inside {
   color: #92400E;
 }
