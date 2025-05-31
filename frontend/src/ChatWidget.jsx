@@ -235,7 +235,7 @@ function ChatWidget({ label = 'Quicky' }) {
                 <div className="suggested-questions">
                   {[
                       "Where can I buy Kit Kat and Smarties?",
-                      "How many Nestlés products are listed on the site?",
+                      "How many Nestlé products are listed on the site?",
                       "Give me a recipe rich in protein",
                       "Avez-vous des collations savoureuses?"
                     ].map((q, idx) => (
