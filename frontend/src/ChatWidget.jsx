@@ -242,7 +242,7 @@ function ChatWidget({ label = 'Quicky' }) {
         </div>
       )}
       <button className={`chat-launcher slide-in`} onClick={toggleChat}>
-        {isOpen ? '✖' : <img src={botIcon} alt="Chat Icon" />}
+        {isOpen ? <img src={closeIcon} id = "idk"/> : <img src={botIcon} alt="Chat Icon" />}
       </button>
     </>
   );
