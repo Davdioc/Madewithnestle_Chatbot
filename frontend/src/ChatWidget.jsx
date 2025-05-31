@@ -163,12 +163,13 @@ function ChatWidget({ label = 'Quicky' }) {
       setIsTyping(false); // stop typing animation
     }
   };
+  const isMobile = () => window.innerWidth <= 500;
   return (
     <>
       {isOpen && <div className="chat-overlay" onClick={toggleChat}></div>}
 
       {isOpen && (
-        <div className={`chat-modal ${animateClose ? 'fade-out' : 'fade-in'}`}>
+        <div className={`chat-modal ${isMobile() ? 'mobile-fullscreen' : ''} ${animateClose ? 'fade-out' : 'fade-in'}`}>
           <div className="chat-header">
             <div className="chat-header-left">
               <img src={botIcon} alt="Bot Icon" className="bot-icon" />
