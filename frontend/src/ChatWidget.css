@@ -460,6 +460,53 @@
   margin-bottom: 12px;
 }
 
+.suggested-questions.fade-out {
+  animation: fadeOut 0.4s ease-in-out forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+  }
+}
+
+.suggested-questions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: -10px;
+  margin-bottom: 12px;
+}
+
+.suggested-btn {
+  background-color: #4E2A1E;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 16px;
+  width: 80%; /* match max-width of message bubble */
+  max-width: 400px;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.suggested-btn:hover {
+  background-color: #3b2016;
+  transform: scale(1.02);
+}
+
+
+
 /* Making the chat more responsive for mobile */
 @media (max-width: 500px) {
   .chat-modal {
@@ -516,4 +563,35 @@
     height: 100%;
     overflow: auto;
   }
+}
+
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes fadeOutModal {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+}
+
+.chat-modal.fade-in {
+  animation: fadeInModal 0.4s ease-out forwards;
+}
+
+.chat-modal.fade-out {
+  animation: fadeOutModal 0.3s ease-in forwards;
+  pointer-events: none;
 }

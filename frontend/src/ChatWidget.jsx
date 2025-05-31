@@ -55,6 +55,12 @@ function ChatWidget({ label = 'Quicky' }) {
   //Typing animation
   const [isTyping, setIsTyping] = useState(false);
 
+  //Suggested questions
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  
+  //Chat modal animation
+  const [animateClose, setAnimateClose] = useState(false);
+
   //scroll to bottom
   const chatBodyRef = useRef(null);
   useEffect(() => {
@@ -64,8 +70,17 @@ function ChatWidget({ label = 'Quicky' }) {
   }, [messages, isTyping]); 
 
   const toggleChat = () => {
-    setIsOpen(!isOpen);
-    setShowPreview(false);
+    if (isOpen) {
+      setAnimateClose(true);
+      setTimeout(() => {
+        setIsOpen(false);
+        setAnimateClose(false);
+      }, 300); // match fadeOutModal duration
+    } else {
+      setIsOpen(true);
+      setShowPreview(false);
+    }
+
   };
 
 
@@ -80,11 +95,21 @@ function ChatWidget({ label = 'Quicky' }) {
     setBotIcon(draftIcon);
     setShowDropdown(false);
   };
+  const handleSuggestedClick = (question) => {
+    const container = document.querySelector('.suggested-questions');
+    if (container) container.classList.add('fade-out');
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+    setTimeout(() => {
+      setShowSuggestions(false);
+      handleSend(question); //Pass the question directly
+    }, 400);
+  };
 
-    const userMessage = { sender: 'user', text: input,  timestamp: new Date().toISOString()};
+  const handleSend = async (messageText = null) => {
+    const textToSend = messageText || input.trim();
+    if (!textToSend) return;
+
+    const userMessage = { sender: 'user', text: textToSend, timestamp: new Date().toISOString() };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsTyping(true); // start typing animation
@@ -109,7 +134,7 @@ function ChatWidget({ label = 'Quicky' }) {
 
     try {
       const response = await axios.post('https://backendn-e4gph4gxe4dwa9dk.canadaeast-01.azurewebsites.net/api/chat', {
-        question: input,
+        question: textToSend,
         name: botName,
         lat: coords.lat || null,
         lng: coords.lng || null,
@@ -143,7 +168,7 @@ function ChatWidget({ label = 'Quicky' }) {
       {isOpen && <div className="chat-overlay" onClick={toggleChat}></div>}
 
       {isOpen && (
-        <div className="chat-modal">
+        <div className={`chat-modal ${animateClose ? 'fade-out' : 'fade-in'}`}>
           <div className="chat-header">
             <div className="chat-header-left">
               <img src={botIcon} alt="Bot Icon" className="bot-icon" />
@@ -206,6 +231,21 @@ function ChatWidget({ label = 'Quicky' }) {
                 </div>
               </div>
             ))}
+            {showSuggestions && (
+                <div className="suggested-questions">
+                  {[
+                      "Where can I buy Kit Kat and Smarties?",
+                      "How many Nestlés products are listed on the site?",
+                      "Give me a recipe rich in protein",
+                      "Avez-vous des collations savoureuses?"
+                    ].map((q, idx) => (
+                    <button key={idx} className="suggested-btn" onClick={() => handleSuggestedClick(q)}>
+                      {q}
+                    </button>
+                    ))
+                  }
+                </div>
+              )}
             {isTyping && (
               <div className="chat-msg bot">
                 <div className="msg-wrapper bot">
