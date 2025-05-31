@@ -185,6 +185,12 @@ function ChatWidget({ label = 'Quicky' }) {
           </div>
 
           <div className="chat-body" ref = {chatBodyRef}>
+             <div className="chat-welcome-section">
+              <img src={botIcon} alt="Bot" className="chat-welcome-icon" />
+              <div className="chat-welcome-name">{botName}</div>
+              <br />
+              <div className="chat-welcome-time">{new Date(messages[0].timestamp).toLocaleString()}</div>
+            </div>
             {messages.map((msg, idx) => (
               <div key={idx} className={`chat-msg ${msg.sender}`}>
                 <div className={`msg-wrapper ${msg.sender}`}>
