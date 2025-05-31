@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 
-function NestlePage() {
+function NestlePage2() {
   return (
     <iframe
-      src="/NP.html"
+      src="/NP2.html"
       style={{
         position: 'absolute',
         top: 0,
@@ -17,4 +17,4 @@ function NestlePage() {
     />
   );
 }
-export default NestlePage;
+export default NestlePage2;
