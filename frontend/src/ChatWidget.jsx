@@ -70,17 +70,8 @@ function ChatWidget({ label = 'Quicky' }) {
   }, [messages, isTyping]); 
 
   const toggleChat = () => {
-    if (isOpen) {
-      setAnimateClose(true);
-      setTimeout(() => {
-        setIsOpen(false);
-        setAnimateClose(false);
-      }, 300); // match fadeOutModal duration
-    } else {
-      setIsOpen(true);
-      setShowPreview(false);
-    }
-
+    setIsOpen(!isOpen);
+    setShowPreview(false);
   };
 
 
@@ -163,13 +154,12 @@ function ChatWidget({ label = 'Quicky' }) {
       setIsTyping(false); // stop typing animation
     }
   };
-  const isMobile = () => window.innerWidth <= 500;
   return (
     <>
       {isOpen && <div className="chat-overlay" onClick={toggleChat}></div>}
 
       {isOpen && (
-        <div className={`chat-modal ${isMobile() ? 'mobile-fullscreen' : ''} ${animateClose ? 'fade-out' : 'fade-in'}`}>
+        <div className="chat-modal">
           <div className="chat-header">
             <div className="chat-header-left">
               <img src={botIcon} alt="Bot Icon" className="bot-icon" />
