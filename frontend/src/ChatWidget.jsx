@@ -18,13 +18,27 @@ function ChatWidget({ label = 'Quicky' }) {
   const presetIcons = [icon1, icon2, icon3, icon4, icon5];
 
   const [isOpen, setIsOpen] = useState(false);
+  const welcomeText = `Hi! I'm ${label}, your personal MadeWithNestlé AI assistant. Ask me anything, and I'll quickly search the entire site to find the answers you need.`;
+  const typedWelcome = useTypingEffect(welcomeText, 25);
+  const [showPreview, setShowPreview] = useState(true);
+  
+
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: `Hi! I'm ${label}, your personal MadeWithNestlé AI assistant. Ask me anything, and I'll quickly search the entire site to find the answers you need`,
+      text: '', // will be updated after first render
       timestamp: new Date().toISOString()
     }
   ]);
+
+  useEffect(() => {
+    // update the welcome message after typing finishes
+    setMessages(prev => {
+      const updated = [...prev];
+      updated[0].text = typedWelcome;
+      return updated;
+    });
+  }, [typedWelcome]);
 
   const [input, setInput] = useState('');
 
@@ -41,7 +55,7 @@ function ChatWidget({ label = 'Quicky' }) {
   //Typing animation
   const [isTyping, setIsTyping] = useState(false);
 
-    //scroll to bottom
+  //scroll to bottom
   const chatBodyRef = useRef(null);
   useEffect(() => {
     if (chatBodyRef.current) {
@@ -49,7 +63,11 @@ function ChatWidget({ label = 'Quicky' }) {
     }
   }, [messages, isTyping]); 
 
-  const toggleChat = () => setIsOpen(!isOpen);
+  const toggleChat = () => {
+    setIsOpen(!isOpen);
+    setShowPreview(false);
+  };
+
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -66,7 +84,7 @@ function ChatWidget({ label = 'Quicky' }) {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-     const userMessage = { sender: 'user', text: input,  timestamp: new Date().toISOString()};
+    const userMessage = { sender: 'user', text: input,  timestamp: new Date().toISOString()};
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsTyping(true); // start typing animation
@@ -166,7 +184,7 @@ function ChatWidget({ label = 'Quicky' }) {
             )}
           </div>
 
-          <div className="chat-body" ref={chatBodyRef}>
+          <div className="chat-body" ref = {chatBodyRef}>
             {messages.map((msg, idx) => (
               <div key={idx} className={`chat-msg ${msg.sender}`}>
                 <div className={`msg-wrapper ${msg.sender}`}>
@@ -215,12 +233,41 @@ function ChatWidget({ label = 'Quicky' }) {
           </div>
         </div>
       )}
-
+      {showPreview && !isOpen && (
+        <div className="preview-wrapper">
+          <div className="preview-bubble">
+            {typedWelcome}
+          </div>
+          <span className="preview-close-outside" onClick={() => setShowPreview(false)}>×</span>
+        </div>
+      )}
       <button className={`chat-launcher slide-in`} onClick={toggleChat}>
         {isOpen ? '✖' : <img src={botIcon} alt="Chat Icon" />}
       </button>
     </>
   );
+}
+
+function useTypingEffect(text, speed = 30) {
+  const [displayedText, setDisplayedText] = useState('');
+
+  useEffect(() => {
+    let currentIndex = -1;
+    setDisplayedText('');
+
+    const intervalId = setInterval(() => {
+      if (currentIndex < text.length-1) {
+        setDisplayedText((prev) => prev + text[currentIndex]);
+        currentIndex += 1;
+      } else {
+        clearInterval(intervalId);
+      }
+    }, speed);
+
+    return () => clearInterval(intervalId);
+  }, [text, speed]);
+
+  return displayedText;
 }
 
 export default ChatWidget;
