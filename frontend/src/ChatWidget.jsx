@@ -185,7 +185,7 @@ function ChatWidget({ label = 'Quicky' }) {
           </div>
 
           <div className="chat-body" ref = {chatBodyRef}>
-             <div className="chat-welcome-section">
+            <div className="chat-welcome-section">
               <img src={botIcon} alt="Bot" className="chat-welcome-icon" />
               <div className="chat-welcome-name">{botName}</div>
               <br />
@@ -241,7 +241,7 @@ function ChatWidget({ label = 'Quicky' }) {
       )}
       {showPreview && !isOpen && (
         <div className="preview-wrapper">
-          <div className="preview-bubble">
+          <div className="preview-bubble" onClick={toggleChat}>
             {typedWelcome}
           </div>
           <span className="preview-close-outside" onClick={() => setShowPreview(false)}>×</span>
