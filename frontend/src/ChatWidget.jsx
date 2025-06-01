@@ -143,6 +143,11 @@ function ChatWidget({ label = 'Quicky' }) {
   };
 
   const handleSend = async (messageText = null) => {
+    if (typeof messageText !== 'string') {
+      var textToSend = input.trim();
+    } else {
+      var textToSend = messageText
+    }
     const textToSend = messageText || input.trim();
     if (!textToSend) return;
 
