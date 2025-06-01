@@ -505,7 +505,14 @@
   transform: scale(1.02);
 }
 
-
+.send-button img {
+  width: 24px;
+  height: 24px;
+}
+.send-button.mic{
+  position: relative;
+  left: -6px;
+}
 
 /* Making the chat more responsive for mobile */
 @media (max-width: 500px) {

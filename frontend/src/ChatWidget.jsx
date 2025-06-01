@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ChatWidget.css';
+
 import icon1 from './assets/icon1.png';
 import icon2 from './assets/icon2.png';
 import icon3 from './assets/icon3.png';
@@ -9,6 +10,8 @@ import dropdownIcon from './assets/dropdown.png';
 import closeIcon from './assets/close.png';
 import userIcon from './assets/usericon.png';
 import sendMessageIcon from './assets/send.png';
+import micIcon from './assets/mic.png';
+
 import axios from 'axios';
 import Markdown from 'react-markdown';
 
@@ -63,6 +66,49 @@ function ChatWidget({ label = 'Quicky' }) {
 
   //scroll to bottom
   const chatBodyRef = useRef(null);
+
+  //Speech recognition
+  const recognitionRef = useRef(null);
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      alert('Your browser does not support speech recognition');
+      return;
+    }
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const SpeechRecognition = window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false); // Also stop if it ends unexpectedly
+    };
+
+    recognition.start();
+    recognitionRef.current = recognition;
+    setIsListening(true);
+  };
+
   useEffect(() => {
     if (chatBodyRef.current) {
       chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
@@ -253,6 +299,14 @@ function ChatWidget({ label = 'Quicky' }) {
           </div>
 
           <div className="chat-input">
+            <button className="send-button mic" onClick={startListening}>
+              <img
+                src={micIcon}
+                alt="Mic"
+                className="send-icon"
+                style={{ filter: isListening ? 'brightness(0) saturate(100%) invert(28%) sepia(95%) saturate(1591%) hue-rotate(88deg) brightness(96%) contrast(97%)' : 'none' }}
+              />
+            </button>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
