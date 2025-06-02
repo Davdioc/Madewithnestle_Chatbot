@@ -1,7 +1,7 @@
 # GraphRAG_ChatBot
 
 This is my final submission for the **Technical Test: AI-Based Chatbot Development**.
-
+[Jump to Second Iteration Improvements](#second-iteration-improvements)
 ---
 
 ## Running the Chatbot Locally
@@ -74,6 +74,35 @@ docker compose up --build
 3. **Frontend responsiveness:** The layout may not respond well on screen sizes narrower than **1041px**.
 
 - **Additional features can be found in the `/documentation` directory**
+---
+
+## Second Iteration Improvements
+
+As part of a second iteration to address structured query limitations and improve system resilience, the following enhancements were implemented:
+
+### Structured Query Support (Mocked)
+
+- Embedded metadata and a simplified index were used to allow the chatbot to respond to questions like:
+  - “How many Nestlé products are listed on the site?”
+  - “How many products are under the coffee category?”
+- These queries are routed internally to a logic layer that interprets and retrieves structured counts from indexed or embedded metadata.
+
+### Store Locator + Amazon Integration
+
+- If the user asks where to buy a product:
+  - The chatbot uses `navigator.geolocation` to fetch nearby stores using the Google Maps API.
+  - Each result includes name, address, distance, open/closed status, and a map link.
+  - A fallback Amazon link for the product is also provided.
+
+### UI/UX Enhancements
+
+- Typing animation and live scroll-to-latest message behavior.
+- Mobile-optimized chat layout with aesthetic adjustments like:
+  - Bubble shadows
+  - Rounded corners
+  - Fade-in transitions
+- Brand-matching color scheme, clean message alignment, and multilingual preview support.
+- "Suggested Questions" can now be toggled via a persistent FAQ button and fade out smoothly after use.
 ---
 
 ## Final Note
