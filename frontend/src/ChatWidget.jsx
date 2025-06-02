@@ -298,7 +298,8 @@ function ChatWidget({ label = 'Quicky' }) {
                         "Where can I buy Kit Kat and Smarties?",
                         "How many Nestlé products are listed on the site?",
                         "Give me a recipe rich in protein",
-                        "Avez-vous des collations savoureuses?"
+                        "Avez-vous des collations savoureuses?",
+                        "你能推荐一种好吃的给我吗"
                       ].map((q, idx) => (
                       <button key={idx} className="suggested-btn" onClick={() => handleSuggestedClick(q)}>
                         {q}
