@@ -291,9 +291,9 @@ def get_location(items: list[str], lat, lng) -> str:
     API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
     endpoint_url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
     if len(items)==1:
-        output = " **Hmm...Great Question. You can find the requested product I have found below:**\n"
+        output = " **Hmm...Great question. You can find the requested product closest to you in the location(s) below:**\n"
     else:
-        output = " **Hmm...Great Question. You can find the requested products I have found below:**\n"
+        output = " **Hmm...Great question. You can find the requested products closest to you in the location(s) below:**\n"
     for item in items:
         params = {
             'keyword': item,
@@ -341,7 +341,7 @@ def get_location(items: list[str], lat, lng) -> str:
 
 def get_amazon_links(items: list[str]) -> str:
     base_url = f"https://www.amazon.ca/s?k="
-    output = " **Amazon Search Links:**\n"
+    output = " **Please click on the links below to find requested products on Amazon:**\n"
 
     for item in items:
         search_query = item.replace(" ", "+")
