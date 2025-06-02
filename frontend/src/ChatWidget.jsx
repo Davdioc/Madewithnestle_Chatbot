@@ -367,15 +367,18 @@ function ChatWidget({ label = 'Quicky' }) {
 
 function useTypingEffect(text, speed = 30) {
   const [displayedText, setDisplayedText] = useState('');
+  const indexRef = useRef(0);
 
   useEffect(() => {
-    let currentIndex = -1;
     setDisplayedText('');
-
+    indexRef.current = 0;
+    
+    if (!text) return;
+    
     const intervalId = setInterval(() => {
-      if (currentIndex < text.length-1) {
-        setDisplayedText((prev) => prev + text[currentIndex]);
-        currentIndex += 1;
+      if (indexRef.current < text.length) {
+        setDisplayedText(text.slice(0, indexRef.current + 1));
+        indexRef.current++;
       } else {
         clearInterval(intervalId);
       }
