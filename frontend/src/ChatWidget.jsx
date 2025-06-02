@@ -280,6 +280,18 @@ function ChatWidget({ label = 'Quicky' }) {
                   </div>
                 </div>
               ))}
+              {isTyping && (
+                <div className="chat-msg bot">
+                  <div className="msg-wrapper bot">
+                    <img src={botIcon} alt="bot" className="msg-avatar left" />
+                    <div className="msg-bubble bot-bubble typing">
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                    </div>
+                  </div>
+                </div>
+              )}
               {!showSuggestions && (
                   <div className="suggested-questions">
                     {[
@@ -295,18 +307,6 @@ function ChatWidget({ label = 'Quicky' }) {
                     }
                   </div>
                 )}
-              {isTyping && (
-                <div className="chat-msg bot">
-                  <div className="msg-wrapper bot">
-                    <img src={botIcon} alt="bot" className="msg-avatar left" />
-                    <div className="msg-bubble bot-bubble typing">
-                      <span className="dot"></span>
-                      <span className="dot"></span>
-                      <span className="dot"></span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
