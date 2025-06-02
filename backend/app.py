@@ -291,9 +291,9 @@ def get_location(items: list[str], lat, lng) -> str:
     API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
     endpoint_url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
     if len(items)==1:
-        output = " **Nearby Locations for Requested Item:**\n"
+        output = " **Hmm...Great Question. You can find the requested product I have found below:**\n"
     else:
-        output = " **Nearby Locations for Requested Items:**\n"
+        output = " **Hmm...Great Question. You can find the requested products I have found below:**\n"
     for item in items:
         params = {
             'keyword': item,
@@ -356,7 +356,7 @@ graph, vector_retriever, entity_chain, locate_chain, chain, llm_transformer = in
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "Made with Nestlé Chatbot API is running."}
+    return {"status": "ok", "message": "Made with Nestlé Chatbot API is running!"}
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
