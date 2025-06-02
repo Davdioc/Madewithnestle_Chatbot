@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ChatWidget.css';
 
+import iconGif from './assets/icon.gif';
+import icon from './assets/icon.png';
 import icon1 from './assets/icon1.png';
 import icon2 from './assets/icon2.png';
 import icon3 from './assets/icon3.png';
 import icon4 from './assets/icon4.png';
-import icon5 from './assets/icon5.png';
+import closeDarkIcon from './assets/closeD.png';
 import dropdownIcon from './assets/dropdown.png';
 import closeIcon from './assets/close.png';
 import userIcon from './assets/usericon.png';
@@ -18,7 +20,7 @@ import Markdown from 'react-markdown';
 
 function ChatWidget({ label = 'Quicky' }) {
     //Icons
-  const presetIcons = [icon1, icon2, icon3, icon4, icon5];
+  const presetIcons = [icon,icon1, icon2, icon3, icon4];
 
   const [isOpen, setIsOpen] = useState(false);
   const welcomeText = `Hi! I'm ${label}, your personal MadeWithNestlé AI assistant. Ask me anything, and I'll quickly search the entire site to find the answers you need.`;
@@ -225,7 +227,7 @@ function ChatWidget({ label = 'Quicky' }) {
                 <img src={dropdownIcon} alt="Dropdown" style={{ width: '20px', height: '20px' }} />
               </button>
               <button className="close-btn" onClick={toggleChat}>
-                <img src={closeIcon} alt="Close" style={{ width: '18px', height: '18px' }} />
+                <img src={closeDarkIcon} alt="Close" style={{ width: '18px', height: '18px' }} />
               </button>
             </div>
 
@@ -256,81 +258,95 @@ function ChatWidget({ label = 'Quicky' }) {
           </div>
 
           <div className="chat-body" ref = {chatBodyRef}>
-            <div className="chat-welcome-section">
-              <img src={botIcon} alt="Bot" className="chat-welcome-icon" />
-              <div className="chat-welcome-name">{botName}</div>
-              <br />
-              <div className="chat-welcome-time">{new Date(messages[0].timestamp).toLocaleString()}</div>
-            </div>
-            {messages.map((msg, idx) => (
-              <div key={idx} className={`chat-msg ${msg.sender}`}>
-                <div className={`msg-wrapper ${msg.sender}`}>
-                  <img src={msg.sender === 'bot' ? botIcon : userIcon} alt={msg.sender} className={`msg-avatar ${msg.sender === 'bot' ? 'left' : 'right'}`} />
-                  <div>
-                    <div className={`msg-bubble ${msg.sender === 'bot' ? 'bot-bubble-custom' : 'user-bubble-custom'}`}>
-                      <Markdown>{msg.text}</Markdown>
-                      <div className="msg-timestamp-inside">
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <div className="chat-body-inner">
+              <div className="chat-welcome-section">
+                <img src={botIcon} alt="Bot" className="chat-welcome-icon" />
+                <div className="chat-welcome-name">{botName}</div>
+                <br />
+                <div className="chat-welcome-time">{new Date(messages[0].timestamp).toLocaleString()}</div>
+              </div>
+              {messages.map((msg, idx) => (
+                <div key={idx} className={`chat-msg ${msg.sender}`}>
+                  <div className={`msg-wrapper ${msg.sender}`}>
+                    <img src={msg.sender === 'bot' ? botIcon : userIcon} alt={msg.sender} className={`msg-avatar ${msg.sender === 'bot' ? 'left' : 'right'}`} />
+                    <div>
+                      <div className={`msg-bubble ${msg.sender === 'bot' ? 'bot-bubble-custom' : 'user-bubble-custom'}`}>
+                        <Markdown>{msg.text}</Markdown>
+                        <div className="msg-timestamp-inside">
+                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            {showSuggestions && (
-                <div className="suggested-questions">
-                  {[
-                      "Where can I buy Kit Kat and Smarties?",
-                      "How many Nestlé products are listed on the site?",
-                      "Give me a recipe rich in protein",
-                      "Avez-vous des collations savoureuses?"
-                    ].map((q, idx) => (
-                    <button key={idx} className="suggested-btn" onClick={() => handleSuggestedClick(q)}>
-                      {q}
-                    </button>
-                    ))
-                  }
-                </div>
-              )}
-            {isTyping && (
-              <div className="chat-msg bot">
-                <div className="msg-wrapper bot">
-                  <img src={botIcon} alt="bot" className="msg-avatar left" />
-                  <div className="msg-bubble bot-bubble typing">
-                    <span className="dot"></span>
-                    <span className="dot"></span>
-                    <span className="dot"></span>
+              ))}
+              {!showSuggestions && (
+                  <div className="suggested-questions">
+                    {[
+                        "Where can I buy Kit Kat and Smarties?",
+                        "How many Nestlé products are listed on the site?",
+                        "Give me a recipe rich in protein",
+                        "Avez-vous des collations savoureuses?"
+                      ].map((q, idx) => (
+                      <button key={idx} className="suggested-btn" onClick={() => handleSuggestedClick(q)}>
+                        {q}
+                      </button>
+                      ))
+                    }
+                  </div>
+                )}
+              {isTyping && (
+                <div className="chat-msg bot">
+                  <div className="msg-wrapper bot">
+                    <img src={botIcon} alt="bot" className="msg-avatar left" />
+                    <div className="msg-bubble bot-bubble typing">
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                    </div>
                   </div>
                 </div>
-              </div>
-          )}
-
+              )}
+            </div>
           </div>
 
           <div className="chat-input">
-            <button className="send-button mic" onClick={startListening}>
-              <img
-                src={micIcon}
-                alt="Mic"
-                className="send-icon"
-                style={{ filter: isListening ? 'brightness(0) saturate(100%) invert(28%) sepia(95%) saturate(1591%) hue-rotate(88deg) brightness(96%) contrast(97%)' : 'none' }}
+            <div className="chat-input-wrapper">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask me..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSend();
+                  }
+                }}
               />
-            </button>
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me anything..."
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSend();
-                }
-              }}
-            />
-            <button className="send-button" onClick={handleSend}>
-                <img src={sendMessageIcon} className="send-icon" />
-            </button>
-
+              <div className="input-buttons">
+                <button className="circle-btn" onClick={startListening}>
+                  <img src={micIcon} alt="Mic" />
+                </button>
+                <button className="circle-btn" onClick={handleSend}>
+                  <img src={sendMessageIcon} alt="Send" />
+                </button>
+              </div>
+            </div>
           </div>
+          <div className="chat-footer-links">
+                <span
+                  className="footer-link"
+                  onClick={() => setShowSuggestions((prev) => !prev)}
+                >
+                  FAQ
+                </span>
+               <span className="footer-separator">|</span>
+                <a
+                  className="footer-link"
+                  href="https://davidoche.netlify.app/"
+                >
+                  Made by David Oche
+                </a>
+            </div> 
         </div>
       )}
       {showPreview && !isOpen && (
@@ -342,7 +358,7 @@ function ChatWidget({ label = 'Quicky' }) {
         </div>
       )}
       <button className={`chat-launcher slide-in`} onClick={toggleChat}>
-        {isOpen ? <img src={closeIcon} id = "idk"/> : <img src={botIcon} alt="Chat Icon" />}
+        {isOpen ? <img src={closeIcon} id = "launcher-close"/> : <img src={iconGif} alt="Chat Icon" />}
       </button>
     </>
   );
