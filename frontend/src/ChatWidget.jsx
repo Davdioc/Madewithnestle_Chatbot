@@ -143,12 +143,16 @@ function ChatWidget({ label = 'Quicky' }) {
   };
 
   const handleSend = async (messageText = null) => {
-    if (typeof messageText !== 'string') {
-      var textToSend = input.trim();
+    let textToSend;
+
+    if (typeof messageText === 'string') {
+      textToSend = messageText.trim();
+    } else if (typeof input === 'string') {
+      textToSend = input.trim();
     } else {
-      var textToSend = messageText
+      console.warn("Invalid input or messageText passed to handleSend:", messageText);
+      return;
     }
-    const textToSend = messageText || input.trim();
     if (!textToSend) return;
 
     const userMessage = { sender: 'user', text: textToSend, timestamp: new Date().toISOString() };
