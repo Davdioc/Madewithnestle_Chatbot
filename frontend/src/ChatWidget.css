@@ -322,6 +322,24 @@
   word-break: break-word;
   margin-bottom: 4px; /* Create space between text and time */
 }
+/* Add table styling */
+.bot-bubble-custom table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.bot-bubble-custom table, 
+.bot-bubble-custom th, 
+.bot-bubble-custom td {
+  border: 1px solid #ddd;
+}
+
+.bot-bubble-custom th, 
+.bot-bubble-custom td {
+  padding: 8px;
+  text-align: left;
+}
 
 /* Avatars */
 .msg-avatar {
@@ -620,7 +638,11 @@
     width: 20px;
     height: 20px;
   }
-
+  .bot-bubble-custom table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
   html, body {
     height: 100%;
     overflow: auto;

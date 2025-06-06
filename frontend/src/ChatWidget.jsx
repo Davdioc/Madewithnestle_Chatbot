@@ -16,6 +16,7 @@ import micIcon from './assets/mic.png';
 
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 
 function ChatWidget({ label = 'Quicky' }) {
@@ -272,7 +273,7 @@ function ChatWidget({ label = 'Quicky' }) {
                     <img src={msg.sender === 'bot' ? botIcon : userIcon} alt={msg.sender} className={`msg-avatar ${msg.sender === 'bot' ? 'left' : 'right'}`} />
                     <div>
                       <div className={`msg-bubble ${msg.sender === 'bot' ? 'bot-bubble-custom' : 'user-bubble-custom'}`}>
-                        <ReactMarkdown>{msg.text}</ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
                         <div className="msg-timestamp-inside">
                           {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
