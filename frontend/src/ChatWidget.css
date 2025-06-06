@@ -165,12 +165,11 @@
 
 .chat-modal {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 90%;
-  max-width: 500px;
+  bottom: 80px;
+  right: 20px;
+  width: 100%;
+  max-width: 420px;
   height: 70vh;
-  transform: translate(-50%, -50%);
   background: white;
   border-radius: 10px;
   display: flex;
@@ -178,7 +177,6 @@
   z-index: 1001;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }
-
 /* input */
 .chat-input {
   display: flex;
@@ -313,7 +311,7 @@
   flex-direction: row-reverse;
 }
 
-.msg-bubble {
+.typing {
   max-width: 80%;
   padding: 14px 18px;
   font-size: 15px;
