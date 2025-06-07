@@ -336,20 +336,36 @@ function ChatWidget({ label = 'Quicky' }) {
             </div>
           </div>
           <div className="chat-footer-links">
-                <span
-                  className="footer-link"
-                  onClick={() => setShowSuggestions((prev) => !prev)}
-                >
+                <span className="footer-link" onClick={() => setShowSuggestions(prev => !prev)}>
                   FAQ
                 </span>
-               <span className="footer-separator">|</span>
-                <a
-                  className="footer-link"
-                  href="https://davidoche.netlify.app/"
-                >
+                <span className="footer-separator">|</span>
+                <a className="footer-link" href="https://davidoche.netlify.app/">
                   Made by David Oche
                 </a>
-            </div> 
+                <span className="footer-separator">|</span>
+                <span
+                  className="footer-link"
+                  onClick={async () => {
+                    if (!input.trim()) {
+                      alert("Enter something first!");
+                      return;
+                    }
+                    try {
+                      await axios.post("https://backendn-e4gph4gxe4dwa9dk.canadaeast-01.azurewebsites.net/api/add", {
+                        text: input.trim()
+                      });
+                      alert("Your message was transformed and added to the knowledge base!");
+                      setInput('');
+                    } catch (err) {
+                      console.error("Error adding to KB:", err);
+                      alert("Failed to add to the knowledge base.");
+                    }
+                  }}
+                >
+                  Add to Knowledge Base
+                </span>
+            </div>
         </div>
       )}
       {showPreview && !isOpen && (

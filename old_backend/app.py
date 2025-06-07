@@ -10,6 +10,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import json
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate
@@ -57,6 +58,11 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
+
+class AddNode(BaseModel):
+    text: str
+class AddNodeResponse(BaseModel):
+    status: str = Field(default="success", description="Status of the operation")
 
 # Cache for compiled regex patterns
 _lucene_chars_pattern = re.compile(r'[+\-&|!(){}[\]^"~*?:\\/]')
@@ -209,6 +215,10 @@ def remove_lucene_chars(text):
     cleaned_text = _whitespace_pattern.sub(' ', cleaned_text).strip()
     return cleaned_text
 
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
+def safe_graph_query(graph, query, params):
+    return graph.query(query, params)
+
 def graph_retriever_simple(question: str, graph: Neo4jGraph) -> str:
     """Simplified graph retriever without entity extraction"""
     try:
@@ -220,27 +230,30 @@ def graph_retriever_simple(question: str, graph: Neo4jGraph) -> str:
             return ""
             
         results = []
-        for term in key_terms[:5]:  # Limit to first 3 key terms
+        for term in key_terms[:5]:  # Limit to first 5 key terms
             try:
                 sanitized_term = remove_lucene_chars(term)
                 if sanitized_term:
-                    response = graph.query(
-                        """CALL db.index.fulltext.queryNodes('fulltext_entity_id', $query, {limit:5})
-                        YIELD node,score
-                        CALL {
-                          WITH node
-                          MATCH (node)-[r:!MENTIONS]->(neighbor)
-                          RETURN node.id + ' - ' + type(r) + ' -> ' + neighbor.id AS output
-                          UNION ALL
-                          WITH node
-                          MATCH (node)<-[r:!MENTIONS]-(neighbor)
-                          RETURN neighbor.id + ' - ' + type(r) + ' -> ' +  node.id AS output
-                        }
-                        RETURN output LIMIT 20
-                        """,
-                        {"query": sanitized_term},
-                    )
-                    results.extend([el['output'] for el in response])
+                    outgoing_query = """
+                    CALL db.index.fulltext.queryNodes('fulltext_entity_id', $query, {limit:5})
+                    YIELD node
+                    MATCH (node)-[r:!MENTIONS]->(neighbor)
+                    RETURN node.id + ' - ' + type(r) + ' -> ' + neighbor.id AS output
+                    LIMIT 25
+                    """
+                    response1 = safe_graph_query(graph, outgoing_query, {"query": sanitized_term})
+                    
+                    # Incoming relations
+                    incoming_query = """
+                    CALL db.index.fulltext.queryNodes('fulltext_entity_id', $query, {limit:5})
+                    YIELD node
+                    MATCH (node)<-[r:!MENTIONS]-(neighbor)
+                    RETURN neighbor.id + ' - ' + type(r) + ' -> ' + node.id AS output
+                    LIMIT 25
+                    """
+                    response2 = safe_graph_query(graph, incoming_query, {"query": sanitized_term})
+
+                    results.extend([el['output'] for el in response1] + [el['output'] for el in response2])
             except Exception:
                 continue
                 
@@ -363,7 +376,29 @@ llm = init_components()
 
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "Made with Nestlé Agent Chatbot API is running!"}
+    return {"status": "ok", "message": "Made with Nestlé Agent Chatbot API is running."}
+
+@app.post("/api/add", response_model=AddNodeResponse)
+async def add_to_graphDB(request: AddNode):
+    try:
+        global graph, llm
+        
+        if not graph or not llm:
+            raise HTTPException(status_code=500, detail="Graph database or LLM not initialized")
+        
+        # Split text into chunks
+        text_chunks = get_text_chunks_langchain(request.text)
+        
+        # Convert to graph documents
+        llm_transformer = LLMGraphTransformer(llm=llm)
+        add_to_graph(text_chunks, graph, llm_transformer)
+        
+        return AddNodeResponse(status="success")
+        
+    except Exception as e:
+        print(f"Error adding node: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to add node to graph")
+
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
@@ -392,17 +427,7 @@ async def chat(request: ChatRequest):
                     ]
                 })
             )
-        async def process_graph_addition():
-            if request.question.strip():
-                documents = get_text_chunks_langchain(request.question)
-                print("Adding documents to graph...")
-                await asyncio.get_event_loop().run_in_executor(
-                    executor, add_to_graph, documents, graph, LLMGraphTransformer(llm)
-                )
-
         result = await run_agent()
-        # Start graph addition in the background
-        asyncio.create_task(process_graph_addition())
 
         response = result.get("output", "I'm sorry, I couldn't process your request.")
         
