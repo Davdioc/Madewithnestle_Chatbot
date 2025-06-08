@@ -15,10 +15,10 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_community.graphs import Neo4jGraph
-from langchain_community.chat_models import AzureChatOpenAI
+from langchain_neo4j import Neo4jGraph
+from langchain_openai import AzureChatOpenAI
 from langchain_openai import AzureOpenAIEmbeddings
-from langchain_community.vectorstores import Neo4jVector
+from langchain_neo4j import Neo4jVector
 from langchain_experimental.graph_transformers import LLMGraphTransformer
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.schema.document import Document
