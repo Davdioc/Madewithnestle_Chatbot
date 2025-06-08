@@ -203,7 +203,6 @@ def search_nestle_knowledge_base(query: str) -> str:
         graph_content = graph_retriever_simple(query, graph)
         
         combined_content = f"Vector Results:\n{vector_content}\n\nGraph Results:\n{graph_content}"
-        print(f"Graph content: {graph_content}\n Vector content: {vector_content}")
         return combined_content if combined_content.strip() else "No relevant information found in the knowledge base."
 
     except Exception as e:
@@ -378,6 +377,16 @@ llm = init_components()
 def read_root():
     return {"status": "ok", "message": "Made with Nestlé Agent Chatbot API is running."}
 
+@app.get("/health")
+def health_check():
+    """Health check endpoint"""
+    status = {
+        "graph": graph is not None,
+        "vector_retriever": vector_retriever is not None,
+        "agent_executor": agent_executor is not None
+    }
+    return {"status": "ok", "components": status}
+
 @app.post("/api/add", response_model=AddNodeResponse)
 async def add_to_graphDB(request: AddNode):
     try:
@@ -413,7 +422,7 @@ async def chat(request: ChatRequest):
             history_text += f"{role}: {msg['content']}\n"
 
         full_input = f"{history_text}User: {request.question} (User location: {request.lat}, {request.lng})" if request.lat and request.lng else f"{history_text} User: {request.question}"
-        
+        print('User asked:', request.question)
         # Execute the agent
         async def run_agent():
             return await asyncio.get_event_loop().run_in_executor(
