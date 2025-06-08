@@ -10,3 +10,9 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
+
+class AddNode(BaseModel):
+    text: str
+
+class AddNodeResponse(BaseModel):
+    status: str = Field(default="success", description="Status of the operation")

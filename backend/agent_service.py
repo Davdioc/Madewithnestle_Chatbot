@@ -1,51 +1,29 @@
-from langchain_community.graphs import Neo4jGraph
 from langchain_community.chat_models import AzureChatOpenAI
-from langchain_openai import AzureOpenAIEmbeddings
-from langchain_community.vectorstores import Neo4jVector
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_core.prompts import ChatPromptTemplate
 from tools import search_nearby_locations, get_amazon_product_links, search_nestle_knowledge_base
-from config import *
-import utils
+from config import Config
 
-def init_components():
-    """Initialize all components including the agent"""
-    
-    # Initialize Neo4j Graph DB connection
-    utils.graph = Neo4jGraph(
-        url=NEO4J_URI,
-        username=NEO4J_USERNAME,
-        password=NEO4J_PASSWORD,
-    )
-    print("Connected to Neo4j graph database")
-    
-    # Initialize Azure OpenAI LLM
+# Global variables
+agent_executor = None
+
+def init_llm():
+    """Initialize Azure OpenAI LLM"""
     llm = AzureChatOpenAI(
-        deployment_name=AZURE_OPENAI_DEPLOYMENT,
-        openai_api_key=AZURE_OPENAI_API_KEY,
-        azure_endpoint=AZURE_OPENAI_ENDPOINT,
-        openai_api_version=AZURE_OPENAI_API_VERSION,
+        deployment_name=Config.AZURE_OPENAI_DEPLOYMENT,
+        openai_api_key=Config.AZURE_OPENAI_API_KEY,
+        azure_endpoint=Config.AZURE_OPENAI_ENDPOINT,
+        openai_api_version=Config.AZURE_OPENAI_API_VERSION,
         temperature=0.3
     )
-    
-    # Initialize embeddings and vector store
-    embeddings = AzureOpenAIEmbeddings(
-        model=AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT,
-        openai_api_key=AZURE_OPENAI_EMBEDDINGS_API,
-        azure_endpoint=AZURE_OPENAI_EMBEDDINGS_ENDPOINT,
-        openai_api_version=AZURE_OPENAI_API_VERSION,
-        openai_api_type="azure"
-    )
-    
-    vector_index = Neo4jVector.from_existing_graph(
-        embeddings,
-        search_type="hybrid",
-        node_label="Document",
-        text_node_properties=["text"],
-        embedding_node_property="embedding"
-    )
-    utils.vector_retriever = vector_index.as_retriever()
+    return llm
 
+def init_agent():
+    """Initialize the agent with tools and prompt"""
+    global agent_executor
+    
+    llm = init_llm()
+    
     # Define the agent tools
     tools = [
         search_nearby_locations,
@@ -89,7 +67,7 @@ Remember: You're representing the Nestlé brand, so always be helpful, accurate,
     ])
     
     agent = create_openai_tools_agent(llm, tools, prompt)
-    utils.agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, max_iterations=3)
+    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, max_iterations=3)
     
     print("Agent initialized successfully!")
     return llm

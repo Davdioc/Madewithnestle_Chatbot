@@ -1,7 +1,7 @@
 import os
 import requests
 from langchain_core.tools import tool
-from config import GOOGLE_MAPS_API_KEY
+from config import Config
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     """Calculate distance between two coordinates using Haversine formula"""
@@ -29,7 +29,7 @@ def search_nearby_locations(product_name: str, user_lat: float, user_lng: float,
         Formatted string with nearby locations, addresses, distances, and status
     """
     try:
-        API_KEY = GOOGLE_MAPS_API_KEY
+        API_KEY = Config.GOOGLE_MAPS_API_KEY
         if not API_KEY:
             return "Google Maps API key not configured."
             
@@ -122,7 +122,7 @@ def search_nestle_knowledge_base(query: str) -> str:
         Relevant information from the knowledge base
     """
     try:
-        from utils import vector_retriever, graph, graph_retriever_simple
+        from graph_service import vector_retriever, graph, graph_retriever_simple
         
         if not vector_retriever or not graph:
             return "Knowledge base not available."

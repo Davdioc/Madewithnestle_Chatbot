@@ -235,7 +235,7 @@ def graph_retriever_simple(question: str, graph: Neo4jGraph) -> str:
                 sanitized_term = remove_lucene_chars(term)
                 if sanitized_term:
                     outgoing_query = """
-                    CALL db.index.fulltext.queryNodes('fulltext_entity_id', $query, {limit:5})
+                    CALL db.index.fulltext.queryNodes('fulltext_entity_id', $query, {limit:4})
                     YIELD node
                     MATCH (node)-[r:!MENTIONS]->(neighbor)
                     RETURN node.id + ' - ' + type(r) + ' -> ' + neighbor.id AS output
@@ -245,7 +245,7 @@ def graph_retriever_simple(question: str, graph: Neo4jGraph) -> str:
                     
                     # Incoming relations
                     incoming_query = """
-                    CALL db.index.fulltext.queryNodes('fulltext_entity_id', $query, {limit:5})
+                    CALL db.index.fulltext.queryNodes('fulltext_entity_id', $query, {limit:4})
                     YIELD node
                     MATCH (node)<-[r:!MENTIONS]-(neighbor)
                     RETURN neighbor.id + ' - ' + type(r) + ' -> ' + node.id AS output
