@@ -1,7 +1,5 @@
 # GraphRAG_ChatBot
 
-This is my final submission for the **Technical Test: AI-Based Chatbot Development**.
-
 [Jump to Second Iteration Improvements](#second-iteration-improvements)
 ---
 
