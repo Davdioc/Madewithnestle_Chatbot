@@ -104,5 +104,5 @@ As part of a second iteration to address structured query limitations and improv
 - "Suggested Questions" can now be toggled via a persistent FAQ button and fade out smoothly after use.
 ---
 
-- **Additional features can be found in the [`/documentation`](https://github.com/Davdioc/Madewithnestle_Chatbot/tree/main/documentation2) directory**
+- **Additional features can be found in the [`/documentation`](https://github.com/Davdioc/Madewithnestle_Chatbot/tree/main/documentation2) directory.**
 
